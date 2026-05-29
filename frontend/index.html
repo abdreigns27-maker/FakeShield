@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FakeShield — AI Fake News Detector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #0b0e1a;
+    --bg-soft: #131829;
+    --card:    #161c33;
+    --border:  #232b4d;
+    --text:    #eef2ff;
+    --muted:   #8b97c0;
+    --cyan:    #2de2e6;
+    --green:   #2ecc71;
+    --red:     #ff5470;
+    --gold:    #ffd166;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(45,226,230,0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(255,84,112,0.06), transparent 40%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .wrap { width: 100%; max-width: 680px; }
+
+  /* ── Header ── */
+  header { text-align: center; margin-bottom: 36px; }
+
+  .logo {
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--cyan);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-size: clamp(48px, 9vw, 76px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    margin-bottom: 14px;
+  }
+
+  h1 .shield {
+    background: linear-gradient(120deg, var(--cyan), #6ee7ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 440px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 170px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    color: var(--text);
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--cyan);
+  }
+
+  textarea::placeholder { color: #5a6488; }
+
+  button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 16px;
+    background: linear-gradient(120deg, var(--cyan), #21c7cb);
+    color: #04121a;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(45,226,230,0.3);
+  }
+
+  button:active { transform: translateY(0); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ── Result ── */
+  .result {
+    margin-top: 22px;
+    padding: 24px;
+    border-radius: 14px;
+    text-align: center;
+    display: none;
+    animation: pop 0.4s ease;
+  }
+
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .result.show { display: block; }
+
+  .result.real { background: rgba(46,204,113,0.12); border: 1px solid var(--green); }
+  .result.fake { background: rgba(255,84,112,0.12); border: 1px solid var(--red); }
+
+  .result .verdict {
+    font-size: 34px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .result.real .verdict { color: var(--green); }
+  .result.fake .verdict { color: var(--red); }
+
+  .result .confidence {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .result .desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .bar {
+    height: 8px;
+    background: var(--bg-soft);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 14px auto 0;
+    max-width: 280px;
+  }
+
+  .bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 4px;
+    transition: width 0.8s ease;
+  }
+
+  .result.real .bar-fill { background: var(--green); }
+  .result.fake .bar-fill { background: var(--red); }
+
+  /* ── Loading ── */
+  .loading { display: none; text-align: center; margin-top: 22px; color: var(--muted); }
+  .loading.show { display: block; }
+
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--cyan);
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    margin-top: 16px; padding: 12px;
+    background: rgba(255,84,112,0.1);
+    border: 1px solid var(--red);
+    border-radius: 10px;
+    color: var(--red);
+    font-size: 14px;
+    text-align: center;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 36px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  footer .sdg {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 12px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">◈ Beaconhouse National University</div>
+    <h1>Fake<span class="shield">Shield</span></h1>
+    <p class="subtitle">Paste any news article or headline and let AI detect whether it's real or fake.</p>
+  </header>
+
+  <div class="card">
+    <label for="newsInput">News Text</label>
+    <textarea id="newsInput" placeholder="Paste a news headline or full article here..."></textarea>
+    <button id="analyzeBtn" onclick="analyze()">🔍 Analyze News</button>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      Analyzing...
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="result" id="result">
+      <div class="verdict" id="verdict"></div>
+      <div class="confidence" id="confidence"></div>
+      <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+      <div class="desc" id="desc"></div>
+    </div>
+  </div>
+
+  <footer>
+    FakeShield · AI Lab Project (CSC-233) · Spring 2026<br>
+    Abdullah Irfan · Tayyeba Sharafat · Danish Tariq · Syed Mohsin Salman
+    <br>
+    <span class="sdg">SDG 16 — Peace, Justice &amp; Strong Institutions</span>
+  </footer>
+
+</div>
+
+<script>
+  // ⚠️ IMPORTANT: After deploying the backend on Render,
+  // replace this with your actual Render URL (e.g. https://fakeshield-api.onrender.com)
+  const API_URL = "http://localhost:5000";
+
+  async function analyze() {
+    const text   = document.getElementById("newsInput").value.trim();
+    const result = document.getElementById("result");
+    const loading = document.getElementById("loading");
+    const errorMsg = document.getElementById("errorMsg");
+    const btn = document.getElementById("analyzeBtn");
+
+    result.classList.remove("show");
+    errorMsg.classList.remove("show");
+
+    if (!text) {
+      errorMsg.textContent = "Please enter some news text first.";
+      errorMsg.classList.add("show");
+      return;
+    }
+
+    loading.classList.add("show");
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(API_URL + "/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text })
+      });
+
+      if (!res.ok) throw new Error("Server error");
+      const data = await res.json();
+
+      loading.classList.remove("show");
+      btn.disabled = false;
+
+      const isFake = data.prediction === 1;
+      result.className = "result show " + (isFake ? "fake" : "real");
+      document.getElementById("verdict").textContent = isFake ? "🚨 FAKE NEWS" : "✅ REAL NEWS";
+      document.getElementById("confidence").textContent = "Confidence: " + data.confidence + "%";
+      document.getElementById("desc").textContent = isFake
+        ? "This article shows patterns commonly associated with fake or misleading news."
+        : "This article shows patterns commonly associated with credible reporting.";
+
+      setTimeout(() => {
+        document.getElementById("barFill").style.width = data.confidence + "%";
+      }, 100);
+
+    } catch (err) {
+      loading.classList.remove("show");
+      btn.disabled = false;
+      errorMsg.textContent = "Could not reach the server. Make sure the backend is running / deployed.";
+      errorMsg.classList.add("show");
+    }
+  }
+
+  // Allow Ctrl+Enter to submit
+  document.getElementById("newsInput").addEventListener("keydown", function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") analyze();
+  });
+</script>
+</body>
+</html>
