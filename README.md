@@ -7,7 +7,7 @@ Frontend (GitHub Pages): https://abdreigns27-maker.github.io/FakeShield
 Backend API (Railway): https://fakeshield-api-production.up.railway.app
 ---
 👥 Team (Section A)
-Name	Roll No.	Model
+Name	Roll No.	Model 
 Abdullah Irfan (Group Lead)	F2024-0146	Logistic Regression
 Tayyeba Sharafat	F2024-1188	Naive Bayes
 Danish Tariq	F2024-0017	Random Forest
