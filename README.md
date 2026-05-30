@@ -48,8 +48,8 @@ FakeShield/
 ---
 ⚠️ Large Files (Google Drive)
 Some files exceeded GitHub's 25MB limit and are available via Google Drive:
-processed_data.csv → Download here
-random_forest_model.pkl → Download here
+processed_data.csv → https://drive.google.com/file/d/1R__7bZl9KispBZ7M77ahWrZ1YJ9FPic_/view?usp=sharing
+random_forest_model.pkl → https://drive.google.com/file/d/1taOXe0_-rIP3-EnpL26KKih_cRXNbutZ/view?usp=sharing
 ---
 📊 Dataset
 Name: Fake and Real News Dataset
