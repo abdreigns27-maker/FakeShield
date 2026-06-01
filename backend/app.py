@@ -62,7 +62,8 @@ def predict():
         confidence = float(max(proba) * 100)
     except AttributeError:
         decision   = model.decision_function(vectorized)[0]
-        confidence = float(min(abs(decision) * 20, 99.9))
+        import math
+        confidence = float(1 / (1 + math.exp(-abs(decision))) * 100)
 
     label = "Fake" if prediction == 1 else "Real"
 
